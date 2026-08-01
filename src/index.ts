@@ -8,8 +8,6 @@ export default {
 
 		const image= url.searchParams.get("image");
 
-
-
 		try{
 			const {recenttracks: {track: tracks} }= await getRecentTracks({
 				lastFmUsername: env.LAST_FM_USERNAME,

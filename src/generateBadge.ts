@@ -48,14 +48,13 @@ async function embedArtwork(url: string | undefined) {
 
 // Returns a compact SVG card for the currently listening track.
 export async function generateBadge(track: BadgeTrack | null) {
-	const isPlaying = track?.isCurrentlyPlaying === true;
-	const artworkUrl = isPlaying
+	const artworkUrl = track
 		? [...track.images].reverse().find(image => image['#text'])?.['#text']
 		: undefined;
 	const artwork = await embedArtwork(artworkUrl);
 	const textX = artwork ? 68 : 16;
-	const title = isPlaying ? truncate(track.name, 40) : 'Not listening right now';
-	const artist = isPlaying ? truncate(track.artistName, 38) : 'Last.fm';
+	const title = track ? truncate(track.name, 40) : 'Not listening right now';
+	const artist = track ? truncate(track.artistName, 38) : 'Last.fm';
 	const label = `Currently playing ${title} by ${artist}`;
 
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="80" viewBox="0 0 320 80" role="img" aria-label="${escapeXml(label)}">
