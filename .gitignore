@@ -1,3 +1,7 @@
+.idea/
+.pnpm-store/
+.vscode/
+
 # Logs
 
 logs
