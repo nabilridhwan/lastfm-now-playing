@@ -8,6 +8,83 @@ interface BadgeTrack {
 	isCurrentlyPlaying: boolean;
 }
 
+const defaultTheme = {
+	background: '#000',
+	border: '#fff',
+	borderOpacity: '.2',
+	text: '#fff',
+	artistOpacity: '.78',
+	sourceOpacity: '.2',
+	fontFamily: 'Inter,Arial,sans-serif',
+	titleFontSize: 14,
+	titleFontWeight: 700,
+	artistFontSize: 11,
+	sourceFontSize: 9,
+	sourceFontStyle: 'italic',
+	cardRadius: 16,
+	artRadius: 6,
+};
+
+export const theme = {
+	default: defaultTheme,
+	retro: {
+		...defaultTheme,
+		background: '#f2d8a7',
+		border: '#8b412b',
+		borderOpacity: '.75',
+		text: '#512817',
+		sourceOpacity: '.6',
+		fontFamily: 'Courier New,Courier,monospace',
+		cardRadius: 5,
+		artRadius: 2,
+	},
+	cyberpunk: {
+		...defaultTheme,
+		background: '#160d2c',
+		border: '#ff52d9',
+		borderOpacity: '.9',
+		text: '#6affef',
+		sourceOpacity: '.55',
+		fontFamily: 'Courier New,Courier,monospace',
+		cardRadius: 3,
+		artRadius: 1,
+	},
+	pink: {
+		...defaultTheme,
+		background: '#fce4ef',
+		border: '#c64c86',
+		borderOpacity: '.5',
+		text: '#702044',
+		sourceOpacity: '.6',
+	},
+	red: {
+		...defaultTheme,
+		background: '#420e16',
+		border: '#ff626d',
+		borderOpacity: '.65',
+		text: '#fff1f1',
+		sourceOpacity: '.55',
+	},
+	green: {
+		...defaultTheme,
+		background: '#102e24',
+		border: '#58ce97',
+		borderOpacity: '.65',
+		text: '#e0ffed',
+		sourceOpacity: '.55',
+	},
+	blue: {
+		...defaultTheme,
+		background: '#11294c',
+		border: '#66adff',
+		borderOpacity: '.65',
+		text: '#eaf4ff',
+		sourceOpacity: '.55',
+	},
+} as const;
+
+export type BadgeTheme = keyof typeof theme;
+
 function escapeXml(value: string) {
 	return value.replace(/[&<>"']/g, character => ({
 		'&': '&amp;',
@@ -47,7 +124,8 @@ async function embedArtwork(url: string | undefined) {
 }
 
 // Returns a compact SVG card for the currently listening track.
-export async function generateBadge(track: BadgeTrack | null) {
+export async function generateBadge(track: BadgeTrack | null, themeName: BadgeTheme = 'default') {
+	const style = theme[themeName];
 	const artworkUrl = track
 		? [...track.images].reverse().find(image => image['#text'])?.['#text']
 		: undefined;
@@ -59,17 +137,16 @@ export async function generateBadge(track: BadgeTrack | null) {
 
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="80" viewBox="0 0 320 80" role="img" aria-label="${escapeXml(label)}">
 	<defs>
-		<clipPath id="card"><rect width="260" height="64" rx="16"/></clipPath>
-		<clipPath id="art"><rect x="16" y="12" width="40" height="40" rx="6"/></clipPath>
+		<clipPath id="card"><rect width="260" height="64" rx="${style.cardRadius}"/></clipPath>
+		<clipPath id="art"><rect x="16" y="12" width="40" height="40" rx="${style.artRadius}"/></clipPath>
 	</defs>
 	<g clip-path="url(#card)">
-		<rect x=".5" y=".5" width="259" height="63" rx="15.5" fill="#000" stroke="#fff" stroke-opacity=".2"/>
+		<rect x=".5" y=".5" width="259" height="63" rx="${style.cardRadius - 0.5}" fill="${style.background}" stroke="${style.border}" stroke-opacity="${style.borderOpacity}"/>
 		${artwork ? `<image href="${artwork}" x="16" y="12" width="40" height="40" preserveAspectRatio="xMidYMid slice" clip-path="url(#art)"/>` : ''}
-		<g font-family="Inter,Arial,sans-serif" fill="#fff">
-			<!-- <text x="${textX}" y="14" font-size="9" font-weight="600" fill-opacity=".5" letter-spacing=".5">NOW PLAYING</text> -->
-			<text x="${textX}" y="28" font-size="14" font-weight="700">${escapeXml(title)}</text>
-			<text x="${textX}" y="44" font-size="11" fill-opacity=".78">${escapeXml(artist)}</text>
-			<text x="250" y="47" text-anchor="end" font-size="9" font-style="italic" fill-opacity=".2">Source: Last.fm</text>
+		<g font-family="${style.fontFamily}" fill="${style.text}">
+			<text x="${textX}" y="28" font-size="${style.titleFontSize}" font-weight="${style.titleFontWeight}">${escapeXml(title)}</text>
+			<text x="${textX}" y="44" font-size="${style.artistFontSize}" fill-opacity="${style.artistOpacity}">${escapeXml(artist)}</text>
+			<text x="250" y="47" text-anchor="end" font-size="${style.sourceFontSize}" font-style="${style.sourceFontStyle}" fill-opacity="${style.sourceOpacity}">Source: Last.fm</text>
 		</g>
 	</g>
 </svg>`;
