@@ -1,6 +1,6 @@
 const BASE_URL = 'https://ws.audioscrobbler.com/2.0/';
 
-interface GetRecentTracksResponse {
+interface GetRecentLastFMTrackResponse {
 	recenttracks: {
 		track: {
 			artist: {
@@ -48,5 +48,5 @@ export async function getRecentLastFMTracks({ lastFmUsername, lastFmApikey }: Ge
 
 	const data = await fetch(url.toString()).then(res => res.json());
 
-	return data as GetRecentTracksResponse;
+	return data as GetRecentLastFMTrackResponse;
 }

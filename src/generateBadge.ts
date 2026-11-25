@@ -1,3 +1,5 @@
+import { BadgeTheme, themeStyles } from './badgeThemes';
+
 interface BadgeTrack {
 	name: string;
 	artistName: string;
@@ -6,85 +8,11 @@ interface BadgeTrack {
 		'#text': string;
 	}[];
 	isCurrentlyPlaying: boolean;
+	theme?: BadgeTheme;
 }
 
-const defaultTheme = {
-	background: '#000',
-	border: '#fff',
-	borderOpacity: '.2',
-	text: '#fff',
-	artistOpacity: '.78',
-	sourceOpacity: '.2',
-	fontFamily: 'Inter,Arial,sans-serif',
-	titleFontSize: 14,
-	titleFontWeight: 700,
-	artistFontSize: 11,
-	sourceFontSize: 9,
-	sourceFontStyle: 'italic',
-	cardRadius: 16,
-	artRadius: 6,
-};
 
-export const theme = {
-	default: defaultTheme,
-	retro: {
-		...defaultTheme,
-		background: '#f2d8a7',
-		border: '#8b412b',
-		borderOpacity: '.75',
-		text: '#512817',
-		sourceOpacity: '.6',
-		fontFamily: 'Courier New,Courier,monospace',
-		cardRadius: 5,
-		artRadius: 2,
-	},
-	cyberpunk: {
-		...defaultTheme,
-		background: '#160d2c',
-		border: '#ff52d9',
-		borderOpacity: '.9',
-		text: '#6affef',
-		sourceOpacity: '.55',
-		fontFamily: 'Courier New,Courier,monospace',
-		cardRadius: 3,
-		artRadius: 1,
-	},
-	pink: {
-		...defaultTheme,
-		background: '#fce4ef',
-		border: '#c64c86',
-		borderOpacity: '.5',
-		text: '#702044',
-		sourceOpacity: '.6',
-	},
-	red: {
-		...defaultTheme,
-		background: '#420e16',
-		border: '#ff626d',
-		borderOpacity: '.65',
-		text: '#fff1f1',
-		sourceOpacity: '.55',
-	},
-	green: {
-		...defaultTheme,
-		background: '#102e24',
-		border: '#58ce97',
-		borderOpacity: '.65',
-		text: '#e0ffed',
-		sourceOpacity: '.55',
-	},
-	blue: {
-		...defaultTheme,
-		background: '#11294c',
-		border: '#66adff',
-		borderOpacity: '.65',
-		text: '#eaf4ff',
-		sourceOpacity: '.55',
-	},
-} as const;
-
-export type BadgeTheme = keyof typeof theme;
-
+// Escapes special characters in a string for use in XML.
 function escapeXml(value: string) {
 	return value.replace(/[&<>"']/g, character => ({
 		'&': '&amp;',
@@ -95,6 +23,7 @@ function escapeXml(value: string) {
 	})[character] ?? character);
 }
 
+// Truncates a string to a maximum length, adding an ellipsis if it was truncated.
 function truncate(value: string, maxLength: number) {
 	return value.length > maxLength
 		? `${value.slice(0, maxLength - 1).trimEnd()}…`
@@ -124,15 +53,15 @@ async function embedArtwork(url: string | undefined) {
 }
 
 // Returns a compact SVG card for the currently listening track.
-export async function generateBadge(track: BadgeTrack | null, themeName: BadgeTheme = 'default') {
-	const style = theme[themeName];
-	const artworkUrl = track
-		? [...track.images].reverse().find(image => image['#text'])?.['#text']
+export async function generateBadge(args: BadgeTrack) {
+	const style = themeStyles[args.theme ?? 'default'];
+	const artworkUrl = args
+		? [...args.images].reverse().find(image => image['#text'])?.['#text']
 		: undefined;
 	const artwork = await embedArtwork(artworkUrl);
 	const textX = artwork ? 68 : 16;
-	const title = track ? truncate(track.name, 40) : 'Not listening right now';
-	const artist = track ? truncate(track.artistName, 38) : 'Last.fm';
+	const title = args ? truncate(args.name, 40) : 'Not listening right now';
+	const artist = args ? truncate(args.artistName, 38) : 'Last.fm';
 	const label = `Currently playing ${title} by ${artist}`;
 
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="80" viewBox="0 0 320 80" role="img" aria-label="${escapeXml(label)}">

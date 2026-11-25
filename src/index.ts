@@ -1,14 +1,14 @@
 import { getRecentLastFMTracks } from './lastfm.api';
-import { generateBadge, theme as importedThemes, BadgeTheme } from './generateBadge';
+import { generateBadge} from './generateBadge';
+import {themeStyles, BadgeTheme} from './badgeThemes';
+import * as sea from 'node:sea';
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 
-		const url = new URL(request.url);
-		const searchParams = url.searchParams;
-
+		const searchParams = new URL(request.url).searchParams;
 		const image = searchParams.get('image');
-		const theme = searchParams.get('theme');
+		const themeURL = searchParams.get('theme') as BadgeTheme | null;
 
 		try {
 			const { recenttracks: { track: tracks } } = await getRecentLastFMTracks({
@@ -16,7 +16,7 @@ export default {
 				lastFmApikey: env.LAST_FM_API_KEY
 			});
 
-			if (tracks.length == 0) {
+			if (tracks.length == 0 || !tracks[0]) {
 				return Response.json({ track: null });
 			}
 
@@ -32,26 +32,21 @@ export default {
 				isCurrentlyPlaying
 			};
 
-			const validThemes = Object.keys(importedThemes);
+			const validThemes = Object.keys(themeStyles) as BadgeTheme[];
 
 			// If requested for an image, return an image
 			if (image) {
+				let theme: BadgeTheme = (themeURL && validThemes.includes(themeURL)) ? themeURL : 'default';
 
-
-				let finalisedTheme: BadgeTheme = 'default';
-
-				if (theme && validThemes.includes(theme)) {
-					finalisedTheme = theme as BadgeTheme;
-				}
-
-				const svgRes = await generateBadge({
+				const svgResponse = await generateBadge({
 					name,
 					artistName,
 					isCurrentlyPlaying,
-					images
-				}, finalisedTheme);
+					images,
+					theme
+				});
 
-				return new Response(svgRes, {
+				return new Response(svgResponse, {
 					headers: {
 						'Content-Type': 'image/svg+xml; charset=utf-8',
 						'Cache-Control': 'public, max-age=30',
@@ -62,8 +57,8 @@ export default {
 
 			const urlObjCopy = new URL(request.url);
 
-			const themeRes: Record<string, string> = Object.keys(importedThemes).reduce((acc, theme) => {
-
+			// An object with the theme name as the key and the url as the value, with the image and theme query params set
+			const themeResponses: Record<string, string> = Object.keys(themeStyles).reduce((acc, theme) => {
 				urlObjCopy.searchParams.set('image', 'true');
 				urlObjCopy.searchParams.set('theme', theme);
 
@@ -73,8 +68,7 @@ export default {
 
 			return Response.json({
 				track: body,
-				user: env.LAST_FM_USERNAME,
-				themes: themeRes
+				themes: themeResponses
 			}, {
 				headers: {
 					'Access-Control-Allow-Origin': '*',
