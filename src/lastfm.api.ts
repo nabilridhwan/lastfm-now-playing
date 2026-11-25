@@ -1,54 +1,52 @@
-const BASE_URL = 'https://ws.audioscrobbler.com/2.0/'
+const BASE_URL = 'https://ws.audioscrobbler.com/2.0/';
 
 interface GetRecentTracksResponse {
 	recenttracks: {
 		track: {
 			artist: {
 				mbid: string,
-				"#text": string;
+				'#text': string;
 			},
-			streamable: "0" | "1",
+			streamable: '0' | '1',
 			image: {
-				size: "small" | "medium" | "large" | "extralarge",
-				"#text": string
+				size: 'small' | 'medium' | 'large' | 'extralarge',
+				'#text': string
 			}[],
 			album: {
 				mbid: string;
-				"#text": string
+				'#text': string
 			},
 			name: string,
 			url: string,
-			"@attr"?: {
-				"nowplaying": "true" | "false"
+			'@attr'?: {
+				'nowplaying': 'true' | 'false'
 			}
 		}[]
-		"@attr": {
+		'@attr': {
 			user: string,
 			totalPages: string,
 			page: string,
 			perPage: string,
 			total: string;
 		}
-	}
+	};
 }
 
 interface GetRecentTracksProps {
 	lastFmUsername: string;
-	lastFmApikey: string
+	lastFmApikey: string;
 }
 
-export async function getRecentTracks({
-	lastFmUsername, lastFmApikey
-																			}: GetRecentTracksProps){
+export async function getRecentLastFMTracks({ lastFmUsername, lastFmApikey }: GetRecentTracksProps) {
 	const url = new URL(BASE_URL);
 	url.search = new URLSearchParams({
 		method: 'user.getrecenttracks',
 		user: lastFmUsername,
 		format: 'json',
 		api_key: lastFmApikey
-	}).toString()
+	}).toString();
 
-	const data = await fetch(url.toString()).then(res => res.json())
+	const data = await fetch(url.toString()).then(res => res.json());
 
 	return data as GetRecentTracksResponse;
 }
