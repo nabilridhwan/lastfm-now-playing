@@ -1,5 +1,8 @@
 import { BadgeTheme, themeStyles } from './badgeThemes';
 
+const cardWidth = 260;
+const cardHeight = 64;
+
 interface BadgeTrack {
 	name: string;
 	artistName: string;
@@ -64,13 +67,13 @@ export async function generateBadge(args: BadgeTrack) {
 	const artist = args ? truncate(args.artistName, 38) : 'Last.fm';
 	const label = `Currently playing ${title} by ${artist}`;
 
-	return `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="80" viewBox="0 0 320 80" role="img" aria-label="${escapeXml(label)}">
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="${cardWidth}" height="${cardHeight}" viewBox="0 0 ${cardWidth} ${cardHeight}" role="img" aria-label="${escapeXml(label)}">
 	<defs>
-		<clipPath id="card"><rect width="260" height="64" rx="${style.cardRadius}"/></clipPath>
+		<clipPath id="card"><rect width="${cardWidth}" height="${cardHeight}" rx="${style.cardRadius}"/></clipPath>
 		<clipPath id="art"><rect x="16" y="12" width="40" height="40" rx="${style.artRadius}"/></clipPath>
 	</defs>
 	<g clip-path="url(#card)">
-		<rect x=".5" y=".5" width="259" height="63" rx="${style.cardRadius - 0.5}" fill="${style.background}" stroke="${style.border}" stroke-opacity="${style.borderOpacity}"/>
+		<rect x=".5" y=".5" width="${cardWidth - 1}" height="${cardHeight - 1}" rx="${style.cardRadius - 0.5}" fill="${style.background}" stroke="${style.border}" stroke-opacity="${style.borderOpacity}"/>
 		${artwork ? `<image href="${artwork}" x="16" y="12" width="40" height="40" preserveAspectRatio="xMidYMid slice" clip-path="url(#art)"/>` : ''}
 		<g font-family="${style.fontFamily}" fill="${style.text}">
 			<text x="${textX}" y="28" font-size="${style.titleFontSize}" font-weight="${style.titleFontWeight}">${escapeXml(title)}</text>
